@@ -1,4 +1,3 @@
-from operator import mod
 from random import randrange
 from turtle import width
 
@@ -186,8 +185,6 @@ while True:
         break
     else:
         step_count += 1
-        if step_count == 100000:
-            print("oi")
 
 # prints final result
 mapper.print_field()
