@@ -1,42 +1,35 @@
+from operator import mod
 from random import randrange
-import threading
+from turtle import width
 
-SIGHT_RANGE = 1
+SIGHT_RANGE = 3
 WIDTH = 50
 HEIGHT = 50
-CORPSES = 1500
-AGENTS = 1 # currently only works with one agent
+CORPSES = 1000
+AGENTS = 5 # currently only works with one agent
 STEPS = 1000000
 
-lock_move = threading.Lock()
 
-class ant(threading.Thread):
+class ant():
 
     def __init__(self, x, y, range, map_class):
-        threading.Thread.__init__(self)
         self.pos_x = x
         self.pos_y = y
         self.sight = range
         self.map_info: map = map_class
-        self.steps = STEPS
         self.holding = False
-    
-    def run(self):
-        self.brain()
 
     def brain(self):
-        # main step loop
-        for i in range(self.steps):
-            # decides if it should pickup or drop
-            if self.holding:
-                if self.should_drop():
-                    self.map_info.field[self.pos_x][self.pos_y] = 1
-                    self.holding = False
-            else:
-                if self.should_pickup():
-                    self.map_info.field[self.pos_x][self.pos_y] = 0
-                    self.holding = True
-            self.move()
+        # decides if it should pickup or drop
+        if self.holding:
+            if self.should_drop():
+                self.map_info.field[self.pos_x][self.pos_y] = 1
+                self.holding = False
+        else:
+            if self.should_pickup():
+                self.map_info.field[self.pos_x][self.pos_y] = 0
+                self.holding = True
+        self.move()
 
     def should_drop(self):
         if self.map_info.field[self.pos_x][self.pos_y] == 0:
@@ -66,6 +59,10 @@ class ant(threading.Thread):
                 elif j > self.sight+1: temp_j = self.pos_y + j - self.sight + 1
                 else: temp_j = self.pos_y
                 # sums the designated position
+                if temp_i >= WIDTH:
+                    temp_i = temp_i - WIDTH
+                if temp_j >= HEIGHT:
+                    temp_j = temp_j - HEIGHT
                 amount_dead = amount_dead + self.map_info.field[temp_i][temp_j]
         return amount_dead
 
@@ -73,7 +70,6 @@ class ant(threading.Thread):
         moved = False
         while not moved:
             x = randrange(0,4) # 0 = west, 1 = south, 2 = east, 3 = north
-            lock_move.acquire()
             if x == 0:
                 temp_x = self.pos_x
                 if (self.pos_x + 1) == self.map_info.width: temp_x = 0
@@ -118,7 +114,6 @@ class ant(threading.Thread):
                     self.map_info.ant_location[self.pos_x][self.pos_y] = False
                     self.pos_y = temp_y
                     moved = True
-            lock_move.release()
             # print(f"destination: {x} new x: {self.pos_x} new y:{self.pos_y}")
 
 class map():
@@ -177,14 +172,22 @@ for i in range(AGENTS):
         if not mapper.ant_location[x][y]:
             mapper.ant_location[x][y] = True
             placed = True
-    thread = ant(x, y, SIGHT_RANGE, mapper)
-    ant_list.append(thread)
-    thread.start()
+    list = ant(x, y, SIGHT_RANGE, mapper)
+    ant_list.append(list)
 
-# waits all ants to finish moving
-for thread in ant_list:
-    print("ants")
-    thread.join()
+step_count = 0
+while True:
+    for agent in ant_list:
+        if step_count < STEPS:
+            agent.brain()
+        else:
+            break
+    if step_count > STEPS:
+        break
+    else:
+        step_count += 1
+        if step_count == 100000:
+            print("oi")
 
 # prints final result
 mapper.print_field()
