@@ -1,12 +1,16 @@
-from random import randrange
-from turtle import width
+from random import randrange, shuffle
+from math import sqrt
+import os
 
-SIGHT_RANGE = 3
-WIDTH = 50
-HEIGHT = 50
+SIGHT_RANGE = 1
+WIDTH = 20
+HEIGHT = 20
 CORPSES = 1000
-AGENTS = 5 # currently only works with one agent
-STEPS = 1000000
+AGENTS = 1 # currently only works with one agent
+STEPS = 10000
+ALPHA = 0.5
+K1 = 0.5
+K2 = 0.5
 
 
 class ant():
@@ -17,36 +21,46 @@ class ant():
         self.sight = range
         self.map_info: map = map_class
         self.holding = False
+        self.being_hold = []
 
     def brain(self):
         # decides if it should pickup or drop
         if self.holding:
             if self.should_drop():
-                self.map_info.field[self.pos_x][self.pos_y] = 1
-                self.holding = False
+                aux = self.map_info.field[self.pos_x][self.pos_y]
+                if aux == 0:
+                    self.map_info.field[self.pos_x][self.pos_y] = self.being_hold
+                    self.holding = False
+                else:
+                    self.map_info.field[self.pos_x][self.pos_y] = self.being_hold
+                    self.being_hold = aux
         else:
             if self.should_pickup():
+                self.being_hold = self.map_info.field[self.pos_x][self.pos_y]
                 self.map_info.field[self.pos_x][self.pos_y] = 0
                 self.holding = True
         self.move()
 
     def should_drop(self):
-        if self.map_info.field[self.pos_x][self.pos_y] == 0:
-            area = ((self.sight*2) + 1)*((self.sight*2) + 1)
-            chance = randrange(0,area)
-            if chance <= self.amount_dead(): return True
-            else: return False
+        area = ((self.sight*2) + 1)*((self.sight*2) + 1)
+        ed = (self.euclidian_distance())/(area*area)
+        chance = (ed/(K2+ed))*(ed/(K2+ed))
+        chance = chance * 100
+        n = randrange(0,101) 
+        if n > chance: return True
+        else: return False
 
     def should_pickup(self):
-        if self.map_info.field[self.pos_x][self.pos_y] == 1:
-            area = ((self.sight*2) + 1)*((self.sight*2) + 1)
-            chance = randrange(1,area+1)
-            if chance > self.amount_dead(): return True
-            else: return False
+        area = ((self.sight*2) + 1)*((self.sight*2) + 1)
+        ed = (self.euclidian_distance())/(area*area)
+        chance = (K1/(K1+ed))*(K1/(K1+ed))
+        chance = chance * 100
+        n = randrange(0,101) 
+        if n > chance: return True
+        else: return False
 
-
-    def amount_dead(self):
-        amount_dead = 0
+    def euclidian_distance(self):
+        distance = 0
         for i in range(self.sight*2 + 1):
             temp_i = 0
             if i < self.sight+1: temp_i = self.pos_x - i
@@ -62,8 +76,16 @@ class ant():
                     temp_i = temp_i - WIDTH
                 if temp_j >= HEIGHT:
                     temp_j = temp_j - HEIGHT
-                amount_dead = amount_dead + self.map_info.field[temp_i][temp_j]
-        return amount_dead
+                print("space")
+                print(self.map_info.field[self.pos_x][self.pos_y][1])
+                print(self.map_info.field[self.pos_x][self.pos_y][0])
+                print(self.map_info.field[temp_i][temp_j][1])
+                print(self.map_info.field[temp_i][temp_j][0])
+                distance = distance + (1 - sqrt(
+                    (float(self.map_info.field[self.pos_x][self.pos_y][0]) - float(self.map_info.field[temp_i][temp_j][0]))*(float(self.map_info.field[self.pos_x][self.pos_y][0]) - float(self.map_info.field[temp_i][temp_j][0]))+
+                    (float(self.map_info.field[self.pos_x][self.pos_y][1]) - float(self.map_info.field[temp_i][temp_j][1]))*(float(self.map_info.field[self.pos_x][self.pos_y][1]) - float(self.map_info.field[temp_i][temp_j][1]))
+                    )/ALPHA)
+        return distance
 
     def move(self):
         moved = False
@@ -118,8 +140,8 @@ class ant():
 class map():
 
     def __init__(self, width, height, corpses):
-        self.width = width
-        self.height = height
+        self.width = int(width)
+        self.height = int(height)
         self.field = []
         self.ant_location = []
         self.create_field(corpses)
@@ -128,38 +150,43 @@ class map():
     # generates dead ants and places them randomly
     def create_field(self, corpses):
         i = 0
+        list_count = []
+        for i in range(self.width*self.height):
+            list_count.append(i)
+        shuffle(list_count)
+        line_count = 0
         for i in range(self.width):
             line = []
             ants = []
             for j in range(self.height):
-                line.append(0)
+                line.append(corpses[list_count[line_count]])
+                line_count += 1
                 ants.append(False)
             self.field.append(line)
             self.ant_location.append(ants)
-        for i in range(corpses):
-            x = randrange(0, self.width)
-            y = randrange(0, self.height)
-            while self.field[x][y] == 1:
-                x = randrange(0, self.width)
-                y = randrange(0, self.height)
-            self.field[x][y] = 1
 
     # prints the current field state
     def print_field(self):
         for i in range(self.width):
             printable = ""
             for j in range(self.height):
-                printable += str(self.field[i][j])
+                printable += str(self.field[i][j][2])
             print(printable)
 
 def read_file():
     file = open("input.txt", "r")
+    data_list = []
     for line in file:
-        continue
-    pass
+        splitted = line.split()
+        data_list.append(splitted)
+    return data_list
 
-# starts map and ant threads
-mapper = map(WIDTH, HEIGHT, CORPSES)
+data_list = read_file()
+print(data_list.__len__())
+# starts map
+mapper = map(WIDTH, HEIGHT, data_list)
+
+#starts ant list
 ant_list = []
 for i in range(AGENTS):
     placed = False
@@ -179,12 +206,18 @@ while True:
     for agent in ant_list:
         if step_count < STEPS:
             agent.brain()
+            continue
         else:
             break
     if step_count > STEPS:
         break
     else:
+        # if step_count % 1000 == 0:
+            # os.system('cls' if os.name == 'nt' else 'clear')
+            # mapper.print_field()
         step_count += 1
 
 # prints final result
+print("")
 mapper.print_field()
+
