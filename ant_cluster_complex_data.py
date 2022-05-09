@@ -7,8 +7,8 @@ WIDTH = 20
 HEIGHT = 20
 CORPSES = 1000
 AGENTS = 1 # currently only works with one agent
-STEPS = 10000
-ALPHA = 0.5
+STEPS = 1000000
+ALPHA = 10
 K1 = 0.5
 K2 = 0.5
 
@@ -28,7 +28,7 @@ class ant():
         if self.holding:
             if self.should_drop():
                 aux = self.map_info.field[self.pos_x][self.pos_y]
-                if aux == 0:
+                if aux[2] == 0:
                     self.map_info.field[self.pos_x][self.pos_y] = self.being_hold
                     self.holding = False
                 else:
@@ -37,7 +37,7 @@ class ant():
         else:
             if self.should_pickup():
                 self.being_hold = self.map_info.field[self.pos_x][self.pos_y]
-                self.map_info.field[self.pos_x][self.pos_y] = 0
+                self.map_info.field[self.pos_x][self.pos_y] = [0,0,0]
                 self.holding = True
         self.move()
 
@@ -46,8 +46,10 @@ class ant():
         ed = (self.euclidian_distance())/(area*area)
         chance = (ed/(K2+ed))*(ed/(K2+ed))
         chance = chance * 100
-        n = randrange(0,101) 
-        if n > chance: return True
+        n = randrange(0,101)
+        if n > chance:
+            # print("eo")
+            return True
         else: return False
 
     def should_pickup(self):
@@ -55,8 +57,9 @@ class ant():
         ed = (self.euclidian_distance())/(area*area)
         chance = (K1/(K1+ed))*(K1/(K1+ed))
         chance = chance * 100
-        n = randrange(0,101) 
-        if n > chance: return True
+        n = randrange(0,101)
+        if n > chance:
+            return True
         else: return False
 
     def euclidian_distance(self):
@@ -76,13 +79,8 @@ class ant():
                     temp_i = temp_i - WIDTH
                 if temp_j >= HEIGHT:
                     temp_j = temp_j - HEIGHT
-                print("space")
-                print(self.map_info.field[self.pos_x][self.pos_y][1])
-                print(self.map_info.field[self.pos_x][self.pos_y][0])
-                print(self.map_info.field[temp_i][temp_j][1])
-                print(self.map_info.field[temp_i][temp_j][0])
                 distance = distance + (1 - sqrt(
-                    (float(self.map_info.field[self.pos_x][self.pos_y][0]) - float(self.map_info.field[temp_i][temp_j][0]))*(float(self.map_info.field[self.pos_x][self.pos_y][0]) - float(self.map_info.field[temp_i][temp_j][0]))+
+                    (float(self.map_info.field[self.pos_x][self.pos_y][0]) - float(self.map_info.field[temp_i][temp_j][0]))*(float(self.map_info.field[self.pos_x][self.pos_y][0]) - float(self.map_info.field[temp_i][temp_j][0])) +
                     (float(self.map_info.field[self.pos_x][self.pos_y][1]) - float(self.map_info.field[temp_i][temp_j][1]))*(float(self.map_info.field[self.pos_x][self.pos_y][1]) - float(self.map_info.field[temp_i][temp_j][1]))
                     )/ALPHA)
         return distance
@@ -179,6 +177,7 @@ def read_file():
     for line in file:
         splitted = line.split()
         data_list.append(splitted)
+    file.close()
     return data_list
 
 data_list = read_file()
@@ -186,7 +185,7 @@ print(data_list.__len__())
 # starts map
 mapper = map(WIDTH, HEIGHT, data_list)
 
-#starts ant list
+# starts ant list
 ant_list = []
 for i in range(AGENTS):
     placed = False
@@ -201,6 +200,7 @@ for i in range(AGENTS):
     list = ant(x, y, SIGHT_RANGE, mapper)
     ant_list.append(list)
 
+mapper.print_field()
 step_count = 0
 while True:
     for agent in ant_list:
@@ -220,4 +220,3 @@ while True:
 # prints final result
 print("")
 mapper.print_field()
-
