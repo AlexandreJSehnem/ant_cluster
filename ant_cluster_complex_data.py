@@ -4,11 +4,11 @@ import matplotlib
 from math import sqrt
 
 SIGHT_RANGE = 1
-WIDTH = 50
-HEIGHT = 100
+WIDTH = 60
+HEIGHT = 60
 CORPSES = 1000
 AGENTS = 1  # currently only works with one agent
-STEPS = 10000000
+STEPS = 20000000
 ALPHA = 4
 K1 = 0.05
 K2 = 0.01
@@ -251,7 +251,7 @@ for i in range(AGENTS):
     ant_list.append(list)
 
 first_plot = mapper.print_field()
-colors = 'white red lime blue yellow'.split()
+colors = 'white red lime lightblue violet'.split()
 cmap = matplotlib.colors.ListedColormap(colors, name='colors', N=None)
 plt.imshow(first_plot, cmap)
 plt.show()
@@ -271,6 +271,10 @@ while True:
             plt.imshow(m_temp, cmap)
             plt.show()
         elif step_count == 5000000:
+            m_temp = mapper.print_field()
+            plt.imshow(m_temp, cmap)
+            plt.show()
+        elif step_count == 10000000:
             m_temp = mapper.print_field()
             plt.imshow(m_temp, cmap)
             plt.show()
