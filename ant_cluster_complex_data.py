@@ -1,6 +1,7 @@
 from random import shuffle, random, randrange
+import matplotlib.pyplot as plt
+import matplotlib
 from math import sqrt
-# import os
 
 SIGHT_RANGE = 1
 WIDTH = 50
@@ -200,14 +201,20 @@ class map():
 
     # prints the current field state
     def print_field(self):
+        returnable = []
         for i in range(self.width):
             printable = ""
+            listable = []
             for j in range(self.height):
                 if self.field[i][j][2] == 0:
+                    listable.append(0)
                     printable += " "
                 else:
+                    listable.append(int(self.field[i][j][2]))
                     printable += str(self.field[i][j][2])
+            returnable.append(listable)
             print(printable)
+        return returnable
 
 
 def read_file():
@@ -243,7 +250,11 @@ for i in range(AGENTS):
     list = ant(x, y, SIGHT_RANGE, mapper)
     ant_list.append(list)
 
-mapper.print_field()
+first_plot = mapper.print_field()
+colors = 'white red lime blue yellow'.split()
+cmap = matplotlib.colors.ListedColormap(colors, name='colors', N=None)
+plt.imshow(first_plot, cmap)
+plt.show()
 step_count = 0
 while True:
     for agent in ant_list:
@@ -255,13 +266,20 @@ while True:
     if step_count > STEPS:
         break
     else:
-        # if step_count % 1000 == 0:
-            # os.system('cls' if os.name == 'nt' else 'clear')
-            # mapper.print_field()
+        if step_count == 1000000:
+            m_temp = mapper.print_field()
+            plt.imshow(m_temp, cmap)
+            plt.show()
+        elif step_count == 5000000:
+            m_temp = mapper.print_field()
+            plt.imshow(m_temp, cmap)
+            plt.show()
         step_count += 1
-
 # prints final result
 print("-----------------------------")
-mapper.print_field()
+m = mapper.print_field()
 print(total_picks)
 print(total_drops)
+
+plt.imshow(m, cmap)
+plt.show()
