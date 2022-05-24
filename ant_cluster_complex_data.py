@@ -52,7 +52,6 @@ class ant():
         global total_drops
         if n < chance:
             total_drops += 1
-            # print("eo")
             return True
         else:
             return False
@@ -166,7 +165,6 @@ class ant():
                     self.map_info.ant_location[self.pos_x][self.pos_y] = False
                     self.pos_y = temp_y
                     moved = True
-            # print(f"destination: {x} new x: {self.pos_x} new y:{self.pos_y}")
 
 
 class map():
