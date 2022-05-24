@@ -1,12 +1,16 @@
 from random import randrange
-from turtle import width
+import matplotlib.pyplot as plt
+import matplotlib
 
-SIGHT_RANGE = 3
+SIGHT_RANGE = 1
 WIDTH = 50
 HEIGHT = 50
-CORPSES = 1000
+CORPSES = 500
 AGENTS = 5 # currently only works with one agent
 STEPS = 1000000
+
+colors = 'white black'.split()
+cmap = matplotlib.colors.ListedColormap(colors, name='colors', N=None)
 
 
 class ant():
@@ -34,7 +38,7 @@ class ant():
         if self.map_info.field[self.pos_x][self.pos_y] == 0:
             area = ((self.sight*2) + 1)*((self.sight*2) + 1)
             chance = randrange(0,area)
-            if chance <= self.amount_dead(): return True
+            if chance < self.amount_dead(): return True
             else: return False
 
     def should_pickup(self):
@@ -174,6 +178,9 @@ for i in range(AGENTS):
     list = ant(x, y, SIGHT_RANGE, mapper)
     ant_list.append(list)
 
+plt.imshow(mapper.field,cmap)
+plt.show()
+
 step_count = 0
 while True:
     for agent in ant_list:
@@ -184,7 +191,12 @@ while True:
     if step_count > STEPS:
         break
     else:
+        if step_count == 500000:
+            plt.imshow(mapper.field,cmap)
+            plt.show()
         step_count += 1
 
 # prints final result
 mapper.print_field()
+plt.imshow(mapper.field,cmap)
+plt.show()
