@@ -48,7 +48,6 @@ class ant():
         area = ((self.sight*2) + 1)*((self.sight*2) + 1)
         ed = (self.euclidian_distance())/(area*area)
         chance = (ed/(K2+ed))*(ed/(K2+ed))
-        # print("Drops man:"+str(chance)+" "+str(ed))
         n = random()
         global total_drops
         if n < chance:
@@ -64,7 +63,6 @@ class ant():
         # if pre_ed == 0: pre_ed = 1
         ed = (pre_ed)/(area*area)
         chance = (K1/(K1+ed))*(K1/(K1+ed))
-        # print(str(pre_ed)+"  "+str(ed)+"  "+str(chance))
         n = random()
         global total_picks
         if n > chance:
@@ -213,7 +211,7 @@ class map():
                     listable.append(int(self.field[i][j][2]))
                     printable += str(self.field[i][j][2])
             returnable.append(listable)
-            print(printable)
+            # print(printable)
         return returnable
 
 
@@ -279,8 +277,6 @@ while True:
             plt.imshow(m_temp, cmap)
             plt.show()
         step_count += 1
-# prints final result
-print("-----------------------------")
 m = mapper.print_field()
 print(total_picks)
 print(total_drops)
